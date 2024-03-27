@@ -1,14 +1,20 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 public enum TURN
 {
-    NAUGHT, CROSS
+    NAUGHT, CROSS, NONE
 }
 
 public enum TILETYPE
 {
     NAUGHT, CROSS, NONE
+}
+
+public enum RESULT
+{
+    WIN, LOSS, DRAW, NONE
 }
 
 public class Board : MonoBehaviour
@@ -23,18 +29,33 @@ public class Board : MonoBehaviour
     [SerializeField] private Sprite naughtPrefab, crossPrefab;
     private Sprite currentPrefab;
 
-    [SerializeField] public TURN turn = TURN.NAUGHT;//{ get; private set; }
-    [SerializeField] public bool turnDisabled = false; //{ get; private set; } 
+    [HideInInspector] public TURN turn = TURN.CROSS;
+    [HideInInspector] public bool turnDisabled = false;
+    //private TURN playerSymbol = TURN.CROSS;
 
     private void Awake()
     {
         Instance = this;
-        currentPrefab = naughtPrefab;
+       
     }
 
     void Start()
     {
+        turn = TURN.CROSS;
+        turnDisabled = false;
+
         InitiateBoardMap();
+
+        //make player start first
+        //my game is weird...make the first turn the player's but the prefab is opposite.
+        //if(playerSymbol == TURN.CROSS)
+        //{
+        //    currentPrefab = crossPrefab;
+        //}
+        //else
+        //{
+        //    currentPrefab = naughtPrefab;
+        //}
     }
 
     private void InitiateBoardMap()
@@ -65,8 +86,10 @@ public class Board : MonoBehaviour
             return;
         }
 
+        Debug.Log("Player turn");
+
         //check we clicked on the board
-        if(!board.ContainsKey(tileClicked))
+        if (!board.ContainsKey(tileClicked))
         {
             return;
         }
@@ -87,8 +110,6 @@ public class Board : MonoBehaviour
         ChangeTurn();
 
         DisablePlayerTurn();
-
-        Debug.Log("Finished robot turn, changing to: " + turn.ToString());
     }
 
     /// <summary>
@@ -116,22 +137,19 @@ public class Board : MonoBehaviour
         //change prefab to place 
         ChangePrefabToPlace();
 
-        Debug.Log("robot before change" + turn.ToString());
         //change turn
         ChangeTurn();
-        Debug.Log("robot after change" + turn.ToString());
-
+    
         EnablePlayerTurn();
 
-        //Debug.Log("Finished robot turn, changing to: " + turn.ToString());
         return true;
     }
 
     bool CanTileChange(TILE_POSITION clickedTile)
     {
         //decide which type of prefab it is
-        TILETYPE type = TILETYPE.NONE;
-        type = (turn == TURN.NAUGHT) ? type = TILETYPE.NAUGHT : type = TILETYPE.CROSS;
+        TILETYPE type = (turn == TURN.NAUGHT) ? TILETYPE.NAUGHT : TILETYPE.CROSS;
+        Debug.Log("CURRENT TILE TYPE SELECTED IS: " + turn);
 
         bool canTileChange = board[clickedTile].GetComponent<Tile>().TriggerTile(currentPrefab, type);
 
@@ -158,22 +176,32 @@ public class Board : MonoBehaviour
         else { turn = TURN.NAUGHT; }
     }
     
-    private void CheckWin()
+    public RESULT CheckWin()
     {
         if (CheckRows(board))
         {
-            Debug.Log("WON");
+            Debug.Log("SOMEBODY WON");
+            return RESULT.WIN;
+        }
+        else if (CheckColumns(board))
+        {
+            Debug.Log("SOMEBODY WON");
+            return RESULT.WIN;
+        }
+        else if (CheckDiagonals(board))
+        {
+            Debug.Log("SOMEBODY WON");
+            return RESULT.WIN;
         }
 
-        if (CheckColumns(board))
+        if (!CheckIfSpacesOnBoard())
         {
-            Debug.Log("WON");
+            Debug.Log("WE DRAW");
+            return RESULT.DRAW;
         }
 
-        if (CheckDiagonals(board))
-        {
-            Debug.Log("WON");
-        }
+        //IDK IF THIS IS CORRECT AS A DEFUALT
+        return RESULT.LOSS;
     }
 
     private bool CheckRows(Dictionary<TILE_POSITION, GameObject> boardInput)
@@ -261,5 +289,21 @@ public class Board : MonoBehaviour
     public void EnablePlayerTurn()
     {
         turnDisabled = false;
+    }
+
+    private bool CheckIfSpacesOnBoard()
+    {
+        bool isSpace = false;
+
+        foreach (GameObject tile in board.Values)
+        {
+            if (!tile.GetComponent<Tile>().triggered)
+            {
+                isSpace = true;
+                return isSpace;
+            }
+        }
+
+        return isSpace;
     }
 }
