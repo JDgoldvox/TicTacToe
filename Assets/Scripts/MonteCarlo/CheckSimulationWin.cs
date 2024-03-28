@@ -8,41 +8,41 @@ public static class CheckSimulationWin
 {
     public static RESULT CheckWin(TURN turn, Dictionary<TILE_POSITION, BoardState> board)
     {
-        //{
-        //    string s = "";
-        //    int i = 0;
-        //    string currentStr = "";
-        //    foreach (var state in board.Values)
-        //    {
-        //        if (state.isActive)
-        //        {
-        //            if (state.tileType == TILETYPE.NAUGHT)
-        //            {
-        //                currentStr += "O";
-        //            }
-        //            else if(state.tileType == TILETYPE.CROSS)
-        //            {
-        //                currentStr += "X";
-        //            }
+        {
+            string s = "";
+            int i = 0;
+            string currentStr = "";
+            foreach (var state in board.Values)
+            {
+                if (state.isActive)
+                {
+                    if (state.tileType == TILETYPE.NAUGHT)
+                    {
+                        currentStr += "O";
+                    }
+                    else if (state.tileType == TILETYPE.CROSS)
+                    {
+                        currentStr += "X";
+                    }
 
-        //            i++;
-        //        }
-        //        else
-        //        {
-        //            currentStr += "+";
-        //            i++;
-        //        }
+                    i++;
+                }
+                else
+                {
+                    currentStr += "+";
+                    i++;
+                }
 
-        //        if (i == 3)
-        //        {
-        //            currentStr += "\n";
-        //            s = currentStr + s;
-        //            currentStr = "";
-        //            i = 0;
-        //        }
-        //    }
-        //    Debug.Log(s);
-        //}
+                if (i == 3)
+                {
+                    currentStr += "\n";
+                    s = currentStr + s;
+                    currentStr = "";
+                    i = 0;
+                }
+            }
+            Debug.Log(s);
+        }
 
         if (CheckRows(turn, board))
         {

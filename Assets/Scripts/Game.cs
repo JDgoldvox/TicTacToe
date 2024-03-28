@@ -54,22 +54,16 @@ public class Game : MonoBehaviour
 
         /////////////////////////////////////////////////////////////
         TILE_POSITION bestMove = MonteCarlo.Instance.Run(tilesAvailible, currentBoard, botSymbol);
+        //TILE_POSITION bestMove = RandomSelect(tilesAvailible); 
 
         //execute best move for robot
         Board.Instance.RobotTurn(bestMove);
     }
 
-    //private void RandomSelect(List<TILE_POSITION> tilesAvailible)
-    //{
-    //    //randomise a number to choose
-    //    while (true)
-    //    {
-    //        int rng = Random.Range(0, tilesAvailible.Count);
-
-    //        if (Board.Instance.RobotTurn(tilesAvailible[rng]))
-    //        {
-    //            break;
-    //        }
-    //    }
-    //}
+    private TILE_POSITION RandomSelect(List<TILE_POSITION> tilesAvailible)
+    {
+        //randomise a number to choose
+        int rng = Random.Range(0, tilesAvailible.Count);
+        return tilesAvailible[rng];
+    }
 }
