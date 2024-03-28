@@ -17,9 +17,10 @@ public class Node
 
     public Node(List<TILE_POSITION> answers) 
     {
+        Debug.Log("Creating new node with " + answers.Count + " children");
+
         //set possible answers
         possibleAnswers = new List<TILE_POSITION>(answers);
-        Debug.Log("Creating new node with " + answers.Count + " children");
         maxChildren = possibleAnswers.Count;
     }
 

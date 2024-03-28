@@ -8,62 +8,62 @@ public static class CheckSimulationWin
 {
     public static RESULT CheckWin(TURN turn, Dictionary<TILE_POSITION, BoardState> board)
     {
-        {
-            string s = "";
-            int i = 0;
-            string currentStr = "";
-            foreach (var state in board.Values)
-            {
-                if (state.isActive)
-                {
-                    if (state.tileType == TILETYPE.NAUGHT)
-                    {
-                        currentStr += "O";
-                    }
-                    else if(state.tileType == TILETYPE.CROSS)
-                    {
-                        currentStr += "X";
-                    }
+        //{
+        //    string s = "";
+        //    int i = 0;
+        //    string currentStr = "";
+        //    foreach (var state in board.Values)
+        //    {
+        //        if (state.isActive)
+        //        {
+        //            if (state.tileType == TILETYPE.NAUGHT)
+        //            {
+        //                currentStr += "O";
+        //            }
+        //            else if(state.tileType == TILETYPE.CROSS)
+        //            {
+        //                currentStr += "X";
+        //            }
 
-                    i++;
-                }
-                else
-                {
-                    currentStr += "+";
-                    i++;
-                }
+        //            i++;
+        //        }
+        //        else
+        //        {
+        //            currentStr += "+";
+        //            i++;
+        //        }
 
-                if (i == 3)
-                {
-                    currentStr += "\n";
-                    s = currentStr + s;
-                    currentStr = "";
-                    i = 0;
-                }
-            }
-            Debug.Log(s);
-        }
+        //        if (i == 3)
+        //        {
+        //            currentStr += "\n";
+        //            s = currentStr + s;
+        //            currentStr = "";
+        //            i = 0;
+        //        }
+        //    }
+        //    Debug.Log(s);
+        //}
 
         if (CheckRows(turn, board))
         {
-            Debug.Log("3 in a row");
+            //Debug.Log("3 in a row");
             return RESULT.WIN;
         }
         else if (CheckColumns(turn, board))
         {
-            Debug.Log("3 column");
+            //Debug.Log("3 column");
             return RESULT.WIN;
         }
         else if (CheckDiagonals(turn, board))
         {
-            Debug.Log("3 diagonal"); 
+            //Debug.Log("3 diagonal"); 
             return RESULT.WIN;
         }
 
         //check draw
         if (!IsSpacesOnBoard(board))
         {
-            Debug.Log("DRAW");
+            //Debug.Log("DRAW");
             return RESULT.DRAW;
         }
 

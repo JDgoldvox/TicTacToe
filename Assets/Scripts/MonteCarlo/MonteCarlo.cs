@@ -24,7 +24,7 @@ public class MonteCarlo : MonoBehaviour {
     }
 
     Node root = null;
-    public int simulationsUntilTermination = 100;
+    public int simulationsUntilTermination = 200;
 
     //Input - list of all possible answers
     //output - best answer 
@@ -42,7 +42,18 @@ public class MonteCarlo : MonoBehaviour {
         //set termination condition
         for(int i = 0; i < simulationsUntilTermination; i++)
         {
-            Debug.Log("Total visits: " + root.visits);
+            Debug.Log("----------------------------------------------");
+            Debug.Log("Total root visits: " + root.visits);
+            Debug.Log("Root node current children: " + root.children.Count);
+            if (root.childrenFull)
+            {
+                Debug.Log("Children FULL!!!!!!!!");
+                Debug.Log("actual count: " + root.children.Count);
+            }
+            else
+            {
+                Debug.Log("CHildren not full :( ");
+            }
 
             //pre actions
             tempBoard.Clear();
@@ -84,23 +95,16 @@ public class MonteCarlo : MonoBehaviour {
         //find a leaf node by comparing uct
         Node current = root;
 
-        //if current node has 0 children
-        if(root.children.Count == 0)
-        {
-            Debug.Log("No children, returning this");
-            return current;
-        }
-
         while (true)
         {
             //if this nodes children are full, we cannot add any more children. So, choose highest uct
             if (current.childrenFull)
             {
                 //otherwise, set current to root's children to kick this off
-                current = root.children[0];
+                //current = current.children[0];
 
                 Debug.Log("children full... attempting to return best child");
-                Debug.Log("amount of children: " +  current.children.Count);
+                Debug.Log("amount of children: " + current.children.Count);
 
                 //if children node is full on current node, keep searching
                 Node bestUCTChild = current.children[0];
@@ -116,21 +120,29 @@ public class MonteCarlo : MonoBehaviour {
                         bestUCTChild = node;
                     }
                 }
+                Debug.Log(outPut);
 
                 //update current
                 current = bestUCTChild;
                 Debug.Log("move: " + current.tileMove);
+                tempBoard[current.tileMove].isActive = true;
                 return current;
             }
             else //children is not full
             {
                 Debug.Log("move: " + current.tileMove);
 
-                if(current == root)
-                {
-                    Debug.Log("Returning parent... cuz I need to.");
-                }
+                //if(current == root)
+                //{
+                //    Debug.Log("Returning parent... cuz I need to.");
+                //}
                 //return this node
+
+                if(current.parent == null)
+                {
+                    Debug.Log("Returning root");
+
+                }
                 return current;
             }
         }
@@ -156,8 +168,8 @@ public class MonteCarlo : MonoBehaviour {
         Node newChildNode = parentNodeToExpand.Add(expandedPosition);
         newChildNode.tileMove = expandedPosition;
 
-        Debug.Log("Chosen expansion: " + expandedPosition);
-        Debug.Log("node max children: " + newChildNode.maxChildren);
+        //Debug.Log("Chosen expansion: " + expandedPosition);
+        //Debug.Log("node max children: " + newChildNode.maxChildren);
 
         //add expansion to temp board
         tempBoard[expandedPosition].isActive = true;
@@ -217,6 +229,13 @@ public class MonteCarlo : MonoBehaviour {
         List<TILE_POSITION> possiblePositions = new List<TILE_POSITION>(simulatedNode.possibleAnswers);
         Debug.Log(simulatedNode.possibleAnswers.Count + " possible choices to expand");
 
+        string strPosAvailible = "";
+        foreach (TILE_POSITION tilePos in possiblePositions)
+        {
+            strPosAvailible += tilePos + ",";
+        }
+        Debug.Log(strPosAvailible);
+
         {
             string s = "";
             int i = 0;
@@ -225,7 +244,7 @@ public class MonteCarlo : MonoBehaviour {
             {
                 if (state.isActive)
                 {
-                    if(state.tileType == TILETYPE.NAUGHT)
+                    if (state.tileType == TILETYPE.NAUGHT)
                     {
                         currentStr += "O";
                     }
@@ -233,7 +252,7 @@ public class MonteCarlo : MonoBehaviour {
                     {
                         currentStr += "X";
                     }
-                    
+
                     i++;
                 }
                 else
@@ -296,8 +315,17 @@ public class MonteCarlo : MonoBehaviour {
         //use random position
         while (true)
         {
-            //get a random positions from tile positions availible
-            int rng = UnityEngine.Random.Range(0, possiblePositions.Count);
+            int rng = 0;
+            if (possiblePositions.Count == 1)
+            {
+                rng = 0;
+                Debug.Log("preset rng number = " + rng);
+            }
+            else //get a random positions from tile positions availible
+            {
+                rng = UnityEngine.Random.Range(0, possiblePositions.Count);
+                Debug.Log("real RNG number = " + rng);
+            }
 
             //remove it from availible for next iteration
             TILE_POSITION posToMove = possiblePositions[rng];
@@ -322,18 +350,18 @@ public class MonteCarlo : MonoBehaviour {
             //if we win
             if (result == RESULT.WIN && currentTurn == botTurn)
             {
-                Debug.Log("bot won!");
+                //Debug.Log("bot won!");
                 return RESULT.WIN;
             }
             else if(result == RESULT.WIN) //if human wins
             {
-                Debug.Log("bot lost!");
+                //Debug.Log("bot lost!");
                 return RESULT.LOSS;
             }
 
             if (result == RESULT.DRAW)
             {
-                Debug.Log("draw!");
+                //Debug.Log("draw!");
                 return RESULT.DRAW;
             }
 
@@ -358,33 +386,53 @@ public class MonteCarlo : MonoBehaviour {
 
         Node current = deepestNode;
 
-        //update if children nodes are full or not
-        if (current.children.Count == current.maxChildren && !current.childrenFull)
-        {
-            Debug.Log("setting children to full");
-            current.childrenFull = true;
-        }
-
         /////////////////////////////////////////////
         
         while (current.parent != null)
         {
+            Debug.Log(current.tileMove + " |||| we need " + current.maxChildren + " BUT WE HAVE " + current.children.Count);
+
+            //update if children nodes are full or not
+            if (current.children.Count == current.maxChildren && !current.childrenFull)
+            {
+                Debug.Log("setting children to full");
+                current.childrenFull = true;
+            }
+
             //update all scores
             current.wins += valueAddition;
 
             //update all visits
             current.visits++;
+            
+            //mitigate the 0
+            if(current.parent == root && root.visits == 0)
+            {
+                root.visits = 1;
+            }
 
-            //update all ucts
             float winRatio = current.wins / current.visits;
             current.uct = UCT.Calculate(winRatio, current.parent.visits, current.visits, 1.41f);
+            Debug.Log("calculated UCT : " + current.uct);
 
             //progress to next parent
             current = current.parent;
         }
 
-        //when its the root node
-        current.visits += 1;
+        //when its the root node // // // // // // // // // // // 
+        if (current.parent == null)
+        {
+            ////update if children nodes are full or not
+            Debug.Log(current.tileMove + " |||| we need " + current.maxChildren + " BUT WE HAVE " + current.children.Count);
+            if (current.children.Count == current.maxChildren && !current.childrenFull)
+            {
+                Debug.Log("setting children to full");
+                current.childrenFull = true;
+            }
+
+            current.visits += 1;
+        }
+        
     }
 
     private TILE_POSITION ReturnBestResult()
