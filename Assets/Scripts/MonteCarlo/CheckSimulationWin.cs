@@ -8,7 +8,6 @@ public static class CheckSimulationWin
 {
     public static RESULT CheckWin(TURN turn, Dictionary<TILE_POSITION, BoardState> board)
     {
-        Debug.Log("calculating... board");
         {
             string s = "";
             int i = 0;
@@ -67,8 +66,6 @@ public static class CheckSimulationWin
             Debug.Log("DRAW");
             return RESULT.DRAW;
         }
-
-        Debug.Log("Still continue game");
 
         return RESULT.NONE;
     }

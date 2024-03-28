@@ -45,17 +45,6 @@ public class Board : MonoBehaviour
         turnDisabled = false;
 
         InitiateBoardMap();
-
-        //make player start first
-        //my game is weird...make the first turn the player's but the prefab is opposite.
-        //if(playerSymbol == TURN.CROSS)
-        //{
-        //    currentPrefab = crossPrefab;
-        //}
-        //else
-        //{
-        //    currentPrefab = naughtPrefab;
-        //}
     }
 
     private void InitiateBoardMap()
@@ -85,8 +74,6 @@ public class Board : MonoBehaviour
         {
             return;
         }
-
-        Debug.Log("Player turn");
 
         //check we clicked on the board
         if (!board.ContainsKey(tileClicked))
@@ -149,7 +136,7 @@ public class Board : MonoBehaviour
     {
         //decide which type of prefab it is
         TILETYPE type = (turn == TURN.NAUGHT) ? TILETYPE.NAUGHT : TILETYPE.CROSS;
-        Debug.Log("CURRENT TILE TYPE SELECTED IS: " + turn);
+        //Debug.Log("CURRENT TILE TYPE SELECTED IS: " + turn);
 
         bool canTileChange = board[clickedTile].GetComponent<Tile>().TriggerTile(currentPrefab, type);
 

@@ -24,7 +24,7 @@ public class MonteCarlo : MonoBehaviour {
     }
 
     Node root = null;
-    public int simulationsUntilTermination = 10;
+    public int simulationsUntilTermination = 100;
 
     //Input - list of all possible answers
     //output - best answer 
@@ -42,47 +42,12 @@ public class MonteCarlo : MonoBehaviour {
         //set termination condition
         for(int i = 0; i < simulationsUntilTermination; i++)
         {
+            Debug.Log("Total visits: " + root.visits);
+
             //pre actions
             tempBoard.Clear();
 
-            {
-                Debug.Log("BEFORE SETTING ORGINAL -.-.--.-.-.-.-.-.-.-.-.-.");
-                string s = "";
-                int p = 0;
-                string currentStr = "";
-                foreach (var state in tempBoard.Values)
-                {
-                    if (state.isActive)
-                    {
-                        if (state.tileType == TILETYPE.NAUGHT)
-                        {
-                            currentStr += "O";
-                        }
-                        else if (state.tileType == TILETYPE.CROSS)
-                        {
-                            currentStr += "X";
-                        }
-
-                        p++;
-                    }
-                    else
-                    {
-                        currentStr += "+";
-                        p++;
-                    }
-
-                    if (p == 3)
-                    {
-                        currentStr += "\n";
-                        s = currentStr + s;
-                        currentStr = "";
-                        p = 0;
-                    }
-                }
-                Debug.Log(s);
-            }
-            
-            //remove shadow copy...
+            //remove shadow copy...and set to original
             tempBoard = new Dictionary<TILE_POSITION, BoardState>();
             foreach(var keyValue in currentBoardInput)
             {
@@ -92,80 +57,6 @@ public class MonteCarlo : MonoBehaviour {
                     tileType = keyValue.Value.tileType,
                     isActive = keyValue.Value.isActive
                 };
-            }
-
-            {
-                Debug.Log("AFTER SETTING TO ORIGINAL -.-.--.-.-.-.-.-.-.-.-.-.");
-                string s = "";
-                int aa = 0;
-                string currentStr = "";
-                foreach (var state in tempBoard.Values)
-                {
-                    if (state.isActive)
-                    {
-                        if (state.tileType == TILETYPE.NAUGHT)
-                        {
-                            currentStr += "O";
-                        }
-                        else if(state.tileType == TILETYPE.CROSS)
-                        {
-                            currentStr += "X";
-                        }
-
-                        aa++;
-                    }
-                    else
-                    {
-                        currentStr += "+";
-                            aa++;
-                    }
-
-                    if (aa == 3)
-                    {
-                        currentStr += "\n";
-                        s = currentStr + s;
-                        currentStr = "";
-                            aa = 0;
-                    }
-                }
-                Debug.Log(s);
-            }
-
-            {
-                Debug.Log("ORIGINAL ORIGINAL -.-.--.-.-.-.-.-.-.-.-.-.");
-                string s = "";
-                int aa = 0;
-                string currentStr = "";
-                foreach (var state in currentBoardInput.Values)
-                {
-                    if (state.isActive)
-                    {
-                        if (state.tileType == TILETYPE.NAUGHT)
-                        {
-                            currentStr += "O";
-                        }
-                        else if (state.tileType == TILETYPE.CROSS)
-                        {
-                            currentStr += "X";
-                        }
-
-                        aa++;
-                    }
-                    else
-                    {
-                        currentStr += "+";
-                        aa++;
-                    }
-
-                    if (aa == 3)
-                    {
-                        currentStr += "\n";
-                        s = currentStr + s;
-                        currentStr = "";
-                        aa = 0;
-                    }
-                }
-                Debug.Log(s);
             }
 
             Node node = Selection();
@@ -200,23 +91,25 @@ public class MonteCarlo : MonoBehaviour {
             return current;
         }
 
-        //otherwise, set current to root's children to kick this off
-        current = root.children[0];
-
         while (true)
         {
             //if this nodes children are full, we cannot add any more children. So, choose highest uct
             if (current.childrenFull)
             {
+                //otherwise, set current to root's children to kick this off
+                current = root.children[0];
+
                 Debug.Log("children full... attempting to return best child");
                 Debug.Log("amount of children: " +  current.children.Count);
 
                 //if children node is full on current node, keep searching
                 Node bestUCTChild = current.children[0];
 
+                string outPut = "UCTS: ";
                 //go through list of children to find highest uct
                 foreach (Node node in current.children)
                 {
+                    outPut += " " + node.uct;
                     //if uct higher, set currentHighestUCTChild to the node found
                     if (node.uct > bestUCTChild.uct)
                     {
@@ -233,6 +126,10 @@ public class MonteCarlo : MonoBehaviour {
             {
                 Debug.Log("move: " + current.tileMove);
 
+                if(current == root)
+                {
+                    Debug.Log("Returning parent... cuz I need to.");
+                }
                 //return this node
                 return current;
             }
@@ -242,14 +139,22 @@ public class MonteCarlo : MonoBehaviour {
     private Node Expansion(Node parentNodeToExpand)
     {
         Debug.Log("EXPANSION STAGE ------------------------------------------");
-        //take a random possible answer
         Debug.Log(parentNodeToExpand.possibleAnswers.Count + " possible choices to expand");
-        int randomIndex = UnityEngine.Random.Range(0, parentNodeToExpand.possibleAnswers.Count);
-        Debug.Log("choosing a random expansion index: " + randomIndex);
-        TILE_POSITION expandedPosition = parentNodeToExpand.possibleAnswers[randomIndex];
+
+        TILE_POSITION expandedPosition;
+        if (parentNodeToExpand.possibleAnswers.Count == 1)
+        {
+            expandedPosition = parentNodeToExpand.possibleAnswers[0];
+        }
+        else //take a random possible answer
+        {
+            int randomIndex = UnityEngine.Random.Range(0, parentNodeToExpand.possibleAnswers.Count);
+            expandedPosition = parentNodeToExpand.possibleAnswers[randomIndex];
+        }
 
         //add it to the children
         Node newChildNode = parentNodeToExpand.Add(expandedPosition);
+        newChildNode.tileMove = expandedPosition;
 
         Debug.Log("Chosen expansion: " + expandedPosition);
         Debug.Log("node max children: " + newChildNode.maxChildren);
@@ -295,6 +200,7 @@ public class MonteCarlo : MonoBehaviour {
 
         //set tile type
         tempBoard[expandedPosition].tileType = expandedNodeTileType;
+        
 
         return newChildNode;
     }
@@ -309,19 +215,8 @@ public class MonteCarlo : MonoBehaviour {
         Debug.Log("SIMULATION STAGE ------------------------------------------");
 
         List<TILE_POSITION> possiblePositions = new List<TILE_POSITION>(simulatedNode.possibleAnswers);
+        Debug.Log(simulatedNode.possibleAnswers.Count + " possible choices to expand");
 
-        //SOME HOW THIS SHIT NEVER RESETS ON SIMULATION 2 AND BEOYND... ^^^^
-        //SOME HOW THIS SHIT NEVER RESETS ON SIMULATION 2 AND BEOYND... ^^^^
-        //SOME HOW THIS SHIT NEVER RESETS ON SIMULATION 2 AND BEOYND... ^^^^
-        //SOME HOW THIS SHIT NEVER RESETS ON SIMULATION 2 AND BEOYND... ^^^^
-        //SOME HOW THIS SHIT NEVER RESETS ON SIMULATION 2 AND BEOYND... ^^^^
-        //SOME HOW THIS SHIT NEVER RESETS ON SIMULATION 2 AND BEOYND... ^^^^
-        //SOME HOW THIS SHIT NEVER RESETS ON SIMULATION 2 AND BEOYND... ^^^^
-        //SOME HOW THIS SHIT NEVER RESETS ON SIMULATION 2 AND BEOYND... ^^^^
-        //SOME HOW THIS SHIT NEVER RESETS ON SIMULATION 2 AND BEOYND... ^^^^
-
-
-        Debug.Log("just created board...");
         {
             string s = "";
             int i = 0;
@@ -358,13 +253,7 @@ public class MonteCarlo : MonoBehaviour {
             Debug.Log(s);
         }
 
-
-        string strPosAvailible = "";
-        foreach (TILE_POSITION tilePos in possiblePositions)
-        {
-            strPosAvailible+= tilePos + ",";
-        }
-        Debug.Log(strPosAvailible);
+        Debug.Log("-------------------- ^^ prep ^^");
 
         //create board bools form possiblePositions
         foreach (TILE_POSITION position in possiblePositions)
@@ -407,15 +296,12 @@ public class MonteCarlo : MonoBehaviour {
         //use random position
         while (true)
         {
-            Debug.Log("====");
             //get a random positions from tile positions availible
-            Debug.Log("Number of possible answers: " + possiblePositions.Count);
             int rng = UnityEngine.Random.Range(0, possiblePositions.Count);
 
             //remove it from availible for next iteration
             TILE_POSITION posToMove = possiblePositions[rng];
             possiblePositions.Remove(posToMove);
-            Debug.Log("removing: " + posToMove);
 
             //add it to our board
             tempBoard[posToMove].isActive = true;
@@ -430,8 +316,7 @@ public class MonteCarlo : MonoBehaviour {
                 tempBoard[posToMove].tileType = TILETYPE.CROSS;
             }
 
-            //check if we win or lose or draw
-            //TODO: this is wrong, not checking opponent
+            //check if somebody has won
             RESULT result = CheckSimulationWin.CheckWin(currentTurn, tempBoard);
 
             //if we win
@@ -473,18 +358,15 @@ public class MonteCarlo : MonoBehaviour {
 
         Node current = deepestNode;
 
-        ////for this leaf node...
-        ////update uct 
-        //{
-        //    if(current.parent != null)
-        //    {
-        //        float winRatio = current.wins / current.visits;
-        //        current.uct = UCT.Calculate(winRatio, current.parent.visits, current.visits, 1.41f);
-        //        //go to parent node
-        //        current = current.parent;
-        //    }
-        //}
+        //update if children nodes are full or not
+        if (current.children.Count == current.maxChildren && !current.childrenFull)
+        {
+            Debug.Log("setting children to full");
+            current.childrenFull = true;
+        }
 
+        /////////////////////////////////////////////
+        
         while (current.parent != null)
         {
             //update all scores
@@ -497,16 +379,12 @@ public class MonteCarlo : MonoBehaviour {
             float winRatio = current.wins / current.visits;
             current.uct = UCT.Calculate(winRatio, current.parent.visits, current.visits, 1.41f);
 
-            //update if children nodes are full or not
-            if(current.children.Count == current.maxChildren && !current.childrenFull)
-            {
-                Debug.Log("setting children to full");
-                current.childrenFull = true;
-            }
-
             //progress to next parent
             current = current.parent;
         }
+
+        //when its the root node
+        current.visits += 1;
     }
 
     private TILE_POSITION ReturnBestResult()

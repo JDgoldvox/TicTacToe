@@ -17,51 +17,6 @@ public class Game : MonoBehaviour
         //return if not robot turn
         if (!Board.Instance.turnDisabled) { return; }
 
-        Debug.Log("Robot turn");
-
-        /////////////////////////////////////////////////////////////
-
-        {
-            Debug.Log("BEFORE");
-            string s = "";
-            int i = 0;
-            string currentStr = "";
-            foreach (var ti in Board.Instance.board.Values)
-            {
-
-                Tile t = ti.GetComponent<Tile>();
-
-                if (t.triggered)
-                {
-                    if (t.tileType == TILETYPE.NAUGHT)
-                    {
-                        currentStr += "O";
-                    }
-                    else if (t.tileType == TILETYPE.CROSS)
-                    {
-                        currentStr += "X";
-                    }
-                    i++;
-                }
-                else
-                {
-                    currentStr += "+";
-                    i++;
-                }
-
-                if (i == 3)
-                {
-                    currentStr += "\n";
-                    s = currentStr + s;
-                    currentStr = "";
-                    i = 0;
-                }
-            }
-            Debug.Log(s);
-        }
-
-        /////////////////////////////////////////////////////////////
-
         List<TILE_POSITION> tilesAvailible = new List<TILE_POSITION>();
 
         //gather the availible tiles to select
@@ -96,47 +51,6 @@ public class Game : MonoBehaviour
             currentBoard[newPos].tileType = tile.GetComponent<Tile>().tileType;
             currentBoard[newPos].isActive = tile.GetComponent<Tile>().triggered;
         }
-
-        /////////////////////////////////////////////////////////////
-        {
-            Debug.Log("AFTER");
-            string s = "";
-            int i = 0;
-            string currentStr = "";
-            foreach (var ti in Board.Instance.board.Values)
-            {
-
-                Tile t = ti.GetComponent<Tile>();
-
-                if (t.triggered)
-                {
-                    if (t.tileType == TILETYPE.NAUGHT)
-                    {
-                        currentStr += "O";
-                    }
-                    else if (t.tileType == TILETYPE.CROSS)
-                    {
-                        currentStr += "X";
-                    }
-                    i++;
-                }
-                else
-                {
-                    currentStr += "+";
-                    i++;
-                }
-
-                if (i == 3)
-                {
-                    currentStr += "\n";
-                    s = currentStr + s;
-                    currentStr = "";
-                    i = 0;
-                }
-            }
-            Debug.Log(s);
-        }
-
 
         /////////////////////////////////////////////////////////////
         TILE_POSITION bestMove = MonteCarlo.Instance.Run(tilesAvailible, currentBoard, botSymbol);
